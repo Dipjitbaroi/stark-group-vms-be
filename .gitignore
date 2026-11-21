@@ -36,4 +36,10 @@ out/
 ### VS Code ###
 .vscode/
 
+### Frontend ###
+Frontend-dart/
 .Frontend-dart/
+
+### Secrets ###
+.env
+
