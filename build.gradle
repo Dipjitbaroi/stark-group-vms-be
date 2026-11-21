@@ -7,6 +7,10 @@ plugins {
 group = 'com.starkgroup'
 version = '0.0.1-SNAPSHOT'
 
+springBoot {
+	mainClass = 'com.starkgroup.vms.StarkGroupVmsApplication'
+}
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(25)
