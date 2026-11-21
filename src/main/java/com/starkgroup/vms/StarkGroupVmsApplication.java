@@ -12,7 +12,22 @@ public class StarkGroupVmsApplication {
 
     public static void main(String[] args) {
         loadDotenv();
+        checkSystemEnv();
         SpringApplication.run(StarkGroupVmsApplication.class, args);
+    }
+
+    /**
+     * Checks if unified DB_STRING or DATABASE_URL is provided directly
+     * via system environment variables (e.g. cloud hosting like Render).
+     */
+    private static void checkSystemEnv() {
+        String dbStr = System.getenv("DB_STRING");
+        if (dbStr == null || dbStr.isBlank()) {
+            dbStr = System.getenv("DATABASE_URL");
+        }
+        if (dbStr != null && !dbStr.isBlank()) {
+            applyDbString(dbStr);
+        }
     }
 
     /**
