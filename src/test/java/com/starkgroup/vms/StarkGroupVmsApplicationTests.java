@@ -8,6 +8,10 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class StarkGroupVmsApplicationTests {
 
+    static {
+        TestEnvHelper.loadDotenv();
+    }
+
     @Test
     void contextLoads() {
     }

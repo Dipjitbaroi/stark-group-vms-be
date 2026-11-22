@@ -1,6 +1,7 @@
 package com.starkgroup.vms.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.starkgroup.vms.TestEnvHelper;
 import com.starkgroup.vms.dto.AuthResponse;
 import com.starkgroup.vms.dto.LoginRequest;
 import com.starkgroup.vms.exception.GlobalExceptionHandler;
@@ -53,12 +54,17 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/auth/login returns 200 OK on valid credentials")
     void login_Success_Returns200() throws Exception {
-        LoginRequest request = new LoginRequest("admin@example.com", "mock-password-123");
+        String testUser = TestEnvHelper.get("VMS_ADMIN_USERNAME");
+        String testPass = TestEnvHelper.get("VMS_ADMIN_PASSWORD");
+        String testRole = TestEnvHelper.get("VMS_ADMIN_ROLE");
+        String testFullName = TestEnvHelper.get("VMS_ADMIN_FULL_NAME");
+
+        LoginRequest request = new LoginRequest(testUser, testPass);
         AuthResponse response = new AuthResponse(
-                "mock-token-xyz",
-                "admin@example.com",
-                "Fleet Manager",
-                "FLEET_ADMIN",
+                "mock-jwt-token-xyz",
+                testUser,
+                testFullName,
+                testRole,
                 "Authentication successful"
         );
 
@@ -68,15 +74,16 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token", is("mock-token-xyz")))
-                .andExpect(jsonPath("$.emailOrUsername", is("admin@example.com")))
-                .andExpect(jsonPath("$.role", is("FLEET_ADMIN")));
+                .andExpect(jsonPath("$.token", is("mock-jwt-token-xyz")))
+                .andExpect(jsonPath("$.emailOrUsername", is(testUser)))
+                .andExpect(jsonPath("$.role", is(testRole)));
     }
 
     @Test
     @DisplayName("POST /api/auth/login returns 401 Unauthorized on invalid credentials")
     void login_InvalidCredentials_Returns401() throws Exception {
-        LoginRequest request = new LoginRequest("admin@example.com", "WrongPassword!");
+        String testUser = TestEnvHelper.get("VMS_ADMIN_USERNAME");
+        LoginRequest request = new LoginRequest(testUser, "WrongPassword!");
 
         when(authService.login(any(LoginRequest.class)))
                 .thenThrow(new InvalidCredentialsException("Invalid username/email or password."));

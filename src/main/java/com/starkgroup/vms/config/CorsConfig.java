@@ -1,8 +1,10 @@
 package com.starkgroup.vms.config;
 
+import com.starkgroup.vms.security.JwtAuthInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
@@ -11,8 +13,12 @@ import java.util.Arrays;
 public class CorsConfig implements WebMvcConfigurer {
 
     private final String[] allowedOrigins;
+    private final JwtAuthInterceptor jwtAuthInterceptor;
 
-    public CorsConfig(@Value("${vms.cors.allowed-origins:*}") String allowedOrigins) {
+    public CorsConfig(
+            @Value("${vms.cors.allowed-origins}") String allowedOrigins,
+            JwtAuthInterceptor jwtAuthInterceptor) {
+        this.jwtAuthInterceptor = jwtAuthInterceptor;
         if (allowedOrigins == null || allowedOrigins.isBlank()) {
             this.allowedOrigins = new String[]{"*"};
         } else {
@@ -32,5 +38,13 @@ public class CorsConfig implements WebMvcConfigurer {
                 .exposedHeaders("Authorization", "Content-Type")
                 .allowCredentials(false)
                 .maxAge(3600);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // Protect all vehicle domain endpoints; keep login, root, and errors public
+        registry.addInterceptor(jwtAuthInterceptor)
+                .addPathPatterns("/api/vehicles", "/api/vehicles/**")
+                .excludePathPatterns("/api/auth/**", "/", "/error");
     }
 }

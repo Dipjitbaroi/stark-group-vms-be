@@ -3,11 +3,10 @@ package com.starkgroup.vms.service.impl;
 import com.starkgroup.vms.dto.AuthResponse;
 import com.starkgroup.vms.dto.LoginRequest;
 import com.starkgroup.vms.exception.InvalidCredentialsException;
+import com.starkgroup.vms.security.JwtService;
 import com.starkgroup.vms.service.AuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -16,16 +15,19 @@ public class AuthServiceImpl implements AuthService {
     private final String configuredPassword;
     private final String configuredFullName;
     private final String configuredRole;
+    private final JwtService jwtService;
 
     public AuthServiceImpl(
             @Value("${vms.auth.admin.username}") String configuredUsername,
             @Value("${vms.auth.admin.password}") String configuredPassword,
-            @Value("${vms.auth.admin.fullName:Fleet Manager}") String configuredFullName,
-            @Value("${vms.auth.admin.role:FLEET_ADMIN}") String configuredRole) {
+            @Value("${vms.auth.admin.fullName}") String configuredFullName,
+            @Value("${vms.auth.admin.role}") String configuredRole,
+            JwtService jwtService) {
         this.configuredUsername = configuredUsername;
         this.configuredPassword = configuredPassword;
         this.configuredFullName = configuredFullName;
         this.configuredRole = configuredRole;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -42,9 +44,9 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidCredentialsException("Invalid username/email or password.");
         }
 
-        String token = "stark-vms-token-" + UUID.randomUUID();
+        String jwtToken = jwtService.generateToken(inputUser, configuredRole, configuredFullName);
         return new AuthResponse(
-                token,
+                jwtToken,
                 inputUser,
                 configuredFullName,
                 configuredRole,

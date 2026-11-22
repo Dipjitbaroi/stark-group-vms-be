@@ -97,6 +97,12 @@ public class StarkGroupVmsApplication {
             case "VMS_CORS_ORIGINS":
                 setIfAbsent("vms.cors.allowed-origins", value);
                 break;
+            case "VMS_JWT_SECRET":
+                setIfAbsent("vms.jwt.secret", value);
+                break;
+            case "VMS_JWT_EXPIRATION_MS":
+                setIfAbsent("vms.jwt.expiration-ms", value);
+                break;
             case "VMS_SEED_ENABLED":
                 setIfAbsent("vms.seed.enabled", value);
                 break;
@@ -116,8 +122,11 @@ public class StarkGroupVmsApplication {
      * Format: mysql://username:password@host:port/database
      * And maps it to spring.datasource.url, username, and password.
      */
-    private static void applyDbString(String dbString) {
+    static void applyDbString(String dbString) {
         try {
+            if (dbString == null || dbString.isBlank()) {
+                return;
+            }
             String clean = dbString.trim();
 
             if (clean.startsWith("jdbc:mysql://")) {
@@ -141,6 +150,12 @@ public class StarkGroupVmsApplication {
                 if (colonIndex > 0) {
                     username = userPass.substring(0, colonIndex);
                     password = userPass.substring(colonIndex + 1);
+                }
+
+                try {
+                    username = java.net.URLDecoder.decode(username, java.nio.charset.StandardCharsets.UTF_8);
+                    password = java.net.URLDecoder.decode(password, java.nio.charset.StandardCharsets.UTF_8);
+                } catch (Exception ignored) {
                 }
 
                 String jdbcUrl;
